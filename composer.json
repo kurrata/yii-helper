@@ -1,0 +1,17 @@
+{
+  "name": "kurrata/yii-helper",
+  "description": "Helper classes for yii2 projects",
+  "minimum-stability": "stable",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "kurrata",
+      "email": "kurrata@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "kurrata\\": ""
+    }
+  }
+}
