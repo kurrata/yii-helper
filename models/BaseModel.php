@@ -1,7 +1,6 @@
 <?php
 namespace kurrata\models;
 
-use app\models\User;
 use kurrata\behaviors\UserBehavior;
 use Yii;
 use yii\behaviors\TimestampBehavior;
@@ -18,35 +17,11 @@ class BaseModel extends ActiveRecord {
     const SCENARIO_CREATE = 'SCENARIO_CREATE';
     const SCENARIO_UPDATE = 'SCENARIO_UPDATE';
 
-    /**
-     * @param             $attr array
-     * @param bool|string $field
-     * @param bool|array  $except
-     *
-     * @return array|string
-     */
-    public static function getMode($attr, $field = false, $except = false) {
-        if ($field !== false) {
-            if (isset($attr[$field]))
-                return $attr[$field];
-            return $field;
-        }
-        if ($except !== false) {
-            foreach ($except as $i)
-                unset($attr[$i]);
-        }
-        return $attr;
-    }
-
     public function behaviors() {
         return [
             ['class' => TimestampBehavior::className()],
             ['class' => UserBehavior::className()],
         ];
-    }
-
-    public function getCreator() {
-        return $this->hasOne(User::className(), ['id' => 'created_by']);
     }
 
     /**
@@ -87,8 +62,10 @@ class BaseModel extends ActiveRecord {
                 $query->andWhere($w);
             }
         }
-        if (isset($options['join']))
-            $query->joinWith($options['join']);
+        if (isset($options['join'])) {
+            foreach ($options['join'] as $table => $alias)
+                $query->joinWith($table);
+        }
 
         if (isset($options['distinct'])) {
             $query->select($options['distinct']);
@@ -105,7 +82,7 @@ class BaseModel extends ActiveRecord {
             $pagination = 10;
 
         $dataProvider = new ActiveDataProvider([
-            'query'      => $query,
+            'query' => $query,
             'pagination' => [
                 'pageSize' => $pagination,
             ],
@@ -135,20 +112,15 @@ class BaseModel extends ActiveRecord {
             $this->load(Yii::$app->request->get());
         }
 
-        if (isset($options['filter'])) {
-            foreach (array_keys($this->getAttributes()) as $attr) {
-                if (in_array($attr, array_keys($options['filter']))) {
-                    switch ($options['filter'][$attr]) {
-                        case "=":
-                            $query->andFilterWhere(['=', $this->tableName() . '.' . $attr, $this->getAttribute($attr)]);
-                    }
-                } else {
-                    $query->andFilterWhere(['like', $this->tableName() . '.' . $attr, $this->getAttribute($attr)]);
-                }
-            }
-        } else {
-            foreach (array_keys($this->getAttributes()) as $attr) {
-                $query->andFilterWhere(['like', $this->tableName() . '.' . $attr, $this->getAttribute($attr)]);
+        foreach (array_keys($this->getAttributes()) as $attr) {
+            $operation = 'like';
+            if (isset($options['filter'][$attr]))
+                $operation = $options['filter'][$attr];
+            if ($pos = strpos($attr, '.')) {
+                $relation = substr($attr, 0, $pos);
+                $query->andFilterWhere([$operation, str_replace($relation, $options['join'][$relation], $attr), $this->getAttribute($attr)]);
+            } else {
+                $query->andFilterWhere([$operation, $this->tableName() . '.' . $attr, $this->getAttribute($attr)]);
             }
         }
         return $dataProvider;
