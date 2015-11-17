@@ -1,9 +1,9 @@
 <?php
 namespace kurrata\models;
 
+use kurrata\behaviors\DatetimeBehavior;
 use kurrata\behaviors\UserBehavior;
 use Yii;
-use yii\behaviors\TimestampBehavior;
 use yii\data\ActiveDataProvider;
 use yii\db\ActiveRecord;
 
@@ -19,7 +19,7 @@ class BaseModel extends ActiveRecord {
 
     public function behaviors() {
         return [
-            ['class' => TimestampBehavior::className()],
+            ['class' => DatetimeBehavior::className()],
             ['class' => UserBehavior::className()],
         ];
     }
