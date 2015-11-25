@@ -33,7 +33,7 @@ class BaseModel extends ActiveRecord {
      *          ['=', 'client_id', 6],
      *      ]
      *      'join'=>[
-     *          'client'
+     *          'relationName'=>'tableName'
      *       ]
      *      'group'=>[
      *          PackageChange::tableName() . '.package_id',
@@ -118,7 +118,7 @@ class BaseModel extends ActiveRecord {
                 $operation = $options['filter'][$attr];
             if ($pos = strpos($attr, '.')) {
                 $relation = substr($attr, 0, $pos);
-                $query->andFilterWhere([$operation, str_replace($relation, $options['join'][$relation], $attr), $this->getAttribute($attr)]);
+                $query->andFilterWhere([$operation, $options['join'][$relation].substr($attr, $pos), $this->getAttribute($attr)]);
             } else {
                 $query->andFilterWhere([$operation, $this->tableName() . '.' . $attr, $this->getAttribute($attr)]);
             }
