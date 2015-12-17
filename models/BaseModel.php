@@ -33,7 +33,7 @@ class BaseModel extends ActiveRecord {
      *          ['=', 'client_id', 6],
      *      ]
      *      'join'=>[
-     *          'relationName'=>'tableName'
+     *          'relationName'
      *       ]
      *      'group'=>[
      *          PackageChange::tableName() . '.package_id',
@@ -63,7 +63,7 @@ class BaseModel extends ActiveRecord {
             }
         }
         if (isset($options['join'])) {
-            foreach ($options['join'] as $table => $alias)
+            foreach ($options['join'] as $table)
                 $query->joinWith($table);
         }
 
@@ -116,12 +116,7 @@ class BaseModel extends ActiveRecord {
             $operation = 'like';
             if (isset($options['filter'][$attr]))
                 $operation = $options['filter'][$attr];
-            if ($pos = strpos($attr, '.')) {
-                $relation = substr($attr, 0, $pos);
-                $query->andFilterWhere([$operation, $options['join'][$relation].substr($attr, $pos), $this->getAttribute($attr)]);
-            } else {
-                $query->andFilterWhere([$operation, $this->tableName() . '.' . $attr, $this->getAttribute($attr)]);
-            }
+            $query->andFilterWhere([$operation, $attr, $this->getAttribute($attr)]);
         }
         return $dataProvider;
     }
