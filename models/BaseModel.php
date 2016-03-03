@@ -116,8 +116,15 @@ class BaseModel extends ActiveRecord {
             $operation = 'like';
             if (isset($options['filter'][$attr]))
                 $operation = $options['filter'][$attr];
-            $query->andFilterWhere([$operation, $attr, $this->getAttribute($attr)]);
+            $query->andFilterWhere([$operation, $this->getAttrTableAlias($attr), $this->getAttribute($attr)]);
         }
         return $dataProvider;
+    }
+
+    private function getAttrTableAlias($attr) {
+        if (strpos($attr, '.') !== false)
+            return $attr;
+        return $this->tableName() . '.' . $attr;
+
     }
 }
